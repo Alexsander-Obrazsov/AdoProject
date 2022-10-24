@@ -99,7 +99,6 @@ namespace AdoProject.OtherForms
             }
 
         }
-
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             Row.Visibility = Visibility.Hidden;
