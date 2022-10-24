@@ -29,10 +29,10 @@ namespace AdoProject
             if (ListBox2.SelectedItem != null)
             {
                 DB db = new DB();
-                db.NameServer = TextBox.Text;
-                db.NameDataBase = ListBox2.SelectedItem.ToString();
+                DB.NameServer = TextBox.Text;
+                DB.NameDataBase = ListBox2.SelectedItem.ToString();
                 db.Show();
-                //this.Close();
+                this.Close();
             }
         }
 
