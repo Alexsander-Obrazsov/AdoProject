@@ -20,11 +20,19 @@ namespace AdoProject
 {
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// Initialize window
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();
         }
-        private void Button_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Button "Connect to the DataBase"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ConnectDataBase_Click(object sender, RoutedEventArgs e)
         {
             if (ListBox2.SelectedItem != null)
             {
@@ -35,20 +43,25 @@ namespace AdoProject
                 this.Close();
             }
         }
-
-        private void Button1_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// Button "Connect to the Server"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void ConnectServer_Click(object sender, RoutedEventArgs e)
         {
             ListBox2.Items.Clear();
             string connectionString = $"Server={TextBox.Text};Trusted_Connection=True;Encrypt=False;";
-            string connectionDB = "select name from sysdatabases";
+            string query = "select name from sysdatabases";
+            StringBuilder errorMessages = new StringBuilder();
             if (TextBox.Text != "")
             {
                 using (SqlConnection connection = new SqlConnection(connectionString))
                 {
+                    SqlCommand command = new SqlCommand(query, connection);
                     try
                     {
                         connection.Open();
-                        SqlCommand command = new SqlCommand(connectionDB, connection);
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
                             if (reader.HasRows)
@@ -60,13 +73,17 @@ namespace AdoProject
                             }
                             else
                             {
-                                Console.WriteLine("Tables not find");
+                                errorMessages.Append("Table not found");
                             }
                         }
                     }
                     catch (SqlException ex)
                     {
-                        Console.WriteLine(ex.Message);
+                        for (int i = 0; i < ex.Errors.Count; i++)
+                        {
+                            errorMessages.Append("Server not found");
+                        }
+                        MessageBox.Show(errorMessages.ToString());
                     }
                 }
                 ListBox2.Items.Remove("master");
@@ -74,8 +91,16 @@ namespace AdoProject
                 ListBox2.Items.Remove("model");
                 ListBox2.Items.Remove("msdb");
             }
+            else
+            {
+                MessageBox.Show("Server not found");
+            }
         }
-
+        /// <summary>
+        /// Button "Exit"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Exit_Click(object sender, RoutedEventArgs e)
         {
             Application.Current.Shutdown();

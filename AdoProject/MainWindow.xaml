@@ -22,7 +22,7 @@
             <Label Grid.Column="0" Content="Server:" Height="30" VerticalAlignment="Bottom" Foreground="White"/>
             <TextBox Grid.Column="1" x:Name="TextBox" Height="30" VerticalAlignment="Bottom" FontSize="18"/>
         </Grid>
-        <Button Grid.Row="1" x:Name="Button1" Content="Connect to the Server" HorizontalAlignment="Center" Height="30" VerticalAlignment="Top" Width="150" Click="Button1_Click" Margin="5"/>
+        <Button Grid.Row="1" x:Name="ConnectServer" Content="Connect to the Server" HorizontalAlignment="Center" Height="30" VerticalAlignment="Top" Width="150" Click="ConnectServer_Click" Margin="5"/>
         <Grid Margin="10,0,10,0" Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -31,7 +31,7 @@
             <Label Content="DataBases:" Height="30" Foreground="White"/>
             <ListBox Grid.Column="1" x:Name="ListBox2" d:ItemsSource="{d:SampleData ItemCount=5}" FontSize="18"/>
         </Grid>
-        <Button Grid.Row="3" x:Name="Button" Content="Connect to the DataBase" HorizontalAlignment="Center" Height="50" VerticalAlignment="Center" Width="220" Click="Button_Click" FontSize="16"/>
+        <Button Grid.Row="3" x:Name="ConnectDataBase" Content="Connect to the DataBase" HorizontalAlignment="Center" Height="50" VerticalAlignment="Center" Width="220" Click="ConnectDataBase_Click" FontSize="16"/>
         <Button Grid.Row="4" x:Name="Exit" Content="Exit" Height="30" Width="100" Margin="10" Click="Exit_Click"/>
     </Grid>
 </Window>

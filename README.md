@@ -1,7 +1,7 @@
 __AdoProject__
 ---
 __Description__  
-This program is designed to work with data in MSSQL databases located on the server.
+This program is designed to work with data in MS SQL Server Express databases located on the server.
 
 <p float="left">
 <img src="Image\program\MainWindow.png" alt="Main window" width="80"/>
@@ -13,7 +13,7 @@ ___
 __Program work__
 ---
 __1.Connection__  
-In order to connect to the MS SQL database through the "AdoProject" application, "Windows Authentication" is used. Therefore, Login and Password are not required.
+In order to connect to the MS SQL Server Express database through the "AdoProject" application, "Windows Authentication" is used. Therefore, Login and Password are not required.
 <p float="left">
 <img src="Image\MS_SQL_connected.png" alt="MSSQL Connected" width="150"/>
 <img src="Image\Application_connected.png" alt="Application Connected" width="150"/>

@@ -27,48 +27,84 @@ namespace AdoProject.OtherForms
         private Dictionary<int, TextBox>? createTextBox;
         private Dictionary<int, RowDefinition>? DeleteRowDefinitions;
         private Dictionary<int, Label>? DeleteLabel;
-
         private ObservableCollection<object>? Maincollection;
-
+        
+        /// <summary>
+        /// Initialize window
+        /// </summary>
         public DB()
         {
             InitializeComponent();
         }
-        private void ListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// Table selection
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void SelectTable_SelectionChanged(object sender, SelectionChangedEventArgs e)
         { 
-            SelectedTable = (string?)ListBox.SelectedItem;
+            SelectedTable = (string?)SelectTable.SelectedItem;
             LoadData();
         }
-        private void DataBase_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-
-        }
+        /// <summary>
+        /// Button "Add line"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void AddLineButton_Click(object sender, RoutedEventArgs e)
         {
-            AddRowInTable(true);
-            AddRows();
+            if (SelectTable.SelectedItems.Count > 0)
+            {
+                AddRowInTable(true);
+                AddRows();
+            }
+            else
+            {
+                MessageBox.Show("Select table");
+            }
         }
+        /// <summary>
+        /// Button "Edit line"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void EditLineButton_Click(object sender, RoutedEventArgs e)
         {
-            AddRowInTable(true);
-            EditRows();
-            if (DataBase.SelectedItem is not null)
+            if (SelectTable.SelectedItems.Count > 0)
             {
-                for (int i = 0; i < createTextBox.Count; i++)
+                if (DataBase.SelectedItems.Count > 0)
                 {
-                    createTextBox[i].Text = ((object[])DataBase.SelectedItem)[i].ToString();
+
+                    AddRowInTable(true);
+                    EditRows();
+                    if (DataBase.SelectedItem is not null)
+                    {
+                        for (int i = 0; i < createTextBox!.Count; i++)
+                        {
+                            createTextBox[i].Text = ((object[])DataBase.SelectedItem)[i].ToString();
+                        }
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Select row");
                 }
             }
             else
             {
-                MessageBox.Show("Change row");
+                MessageBox.Show("Select table");
             }
         }
+        /// <summary>
+        /// Button "Delete line"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DeleteLineButton_Click(object sender, RoutedEventArgs e)
         {
             if (DataBase.SelectedItem is not null)
             {
-                connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
+                ConnectLine();
                 query = $"Delete From {SelectedTable} Where ID = {((object[])DataBase.SelectedItem)[0]}";
                 using (connection = new SqlConnection(connectionString))
                 {
@@ -80,14 +116,19 @@ namespace AdoProject.OtherForms
             }
             else
             {
-                MessageBox.Show("Change row");
+                MessageBox.Show("Select row");
             }
         }
+        /// <summary>
+        /// Event "Window load"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Row.Visibility = Visibility.Hidden;
 
-            string connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
+            ConnectLine();
             string query = $"SELECT TABLE_NAME FROM [{NameDataBase}].INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE'";
 
             using (SqlConnection connection = new SqlConnection(connectionString))
@@ -101,7 +142,7 @@ namespace AdoProject.OtherForms
                     {
                         while (reader.Read())
                         {
-                            ListBox.Items.Add(reader[0].ToString());
+                            SelectTable.Items.Add(reader[0].ToString());
                         }
                     }
                     else
@@ -110,14 +151,24 @@ namespace AdoProject.OtherForms
                     }
                 }
             }
-            ListBox.Items.Remove("sysdiagrams");
+            SelectTable.Items.Remove("sysdiagrams");
         }
+        /// <summary>
+        /// Button "Back"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Back_Click(object sender, RoutedEventArgs e)
         {
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
             this.Close();
         }
+        /// <summary>
+        /// Button "Cancel" in the add line window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Cancel_Click(object sender, RoutedEventArgs e)
         {
             Row.Visibility = Visibility.Hidden;
@@ -125,35 +176,51 @@ namespace AdoProject.OtherForms
             
             for (int i = 0; i < DataBase.Columns.Count; i++)
             {
-                Row.RowDefinitions.Remove(DeleteRowDefinitions[i]);
-                Row.Children.Remove(DeleteLabel[i]);
-                Row.Children.Remove(createTextBox[i]);
+                Row.RowDefinitions.Remove(DeleteRowDefinitions![i]);
+                Row.Children.Remove(DeleteLabel![i]);
+                Row.Children.Remove(createTextBox![i]);
             }
         }
+        /// <summary>
+        /// Button "Clear table"
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ClearTable_Click(object sender, RoutedEventArgs e)
         {
             if (MessageBox.Show("Are you sure?", "Question", MessageBoxButton.YesNo, MessageBoxImage.Warning) == MessageBoxResult.No){}
             else
             {
-                connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
-                query = $"DELETE FROM {SelectedTable}";
-                using (connection = new SqlConnection(connectionString))
+                if (SelectTable.SelectedItems.Count > 0)
                 {
-                    connection.Open();
-                    command = new SqlCommand(query, connection);
-                    command.ExecuteNonQuery();
+                    ConnectLine();
+                    query = $"DELETE FROM {SelectedTable}";
+                    using (connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        command = new SqlCommand(query, connection);
+                        command.ExecuteNonQuery();
+                    }
+                    query = $"DBCC CHECKIDENT ('{SelectedTable}', RESEED, 0)";
+                    using (connection = new SqlConnection(connectionString))
+                    {
+                        connection.Open();
+                        command = new SqlCommand(query, connection);
+                        command.ExecuteNonQuery();
+                    }
+                    LoadData();
                 }
-                connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
-                query = $"DBCC CHECKIDENT ('{SelectedTable}', RESEED, 0)";
-                using (connection = new SqlConnection(connectionString))
+                else
                 {
-                    connection.Open();
-                    command = new SqlCommand(query, connection);
-                    command.ExecuteNonQuery();
+                    MessageBox.Show("Select table");
                 }
-                LoadData();
             }
         }
+        /// <summary>
+        /// Button "Save" in the add line window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Save_Click(object sender, RoutedEventArgs e)
         {
             if (createTextBox is not null)
@@ -189,7 +256,8 @@ namespace AdoProject.OtherForms
                         }
                     }
                 }
-                connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
+
+                ConnectLine();
                 query = $"Insert Into {SelectedTable} ({stqQueryCol}) Values ({strQueryVal})";
                 using (connection = new SqlConnection(connectionString))
                 {
@@ -204,15 +272,20 @@ namespace AdoProject.OtherForms
 
             for (int i = 0; i < DataBase.Columns.Count; i++)
             {
-                Row.RowDefinitions.Remove(DeleteRowDefinitions[i]);
-                Row.Children.Remove(DeleteLabel[i]);
-                Row.Children.Remove(createTextBox[i]);
+                Row.RowDefinitions.Remove(DeleteRowDefinitions![i]);
+                Row.Children.Remove(DeleteLabel![i]);
+                Row.Children.Remove(createTextBox![i]);
             }
         }
+        /// <summary>
+        /// Button "Edit" in the add line window
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
             string strQuery = "";
-            for (int i = 1; i < createTextBox.Count; i++)
+            for (int i = 1; i < createTextBox!.Count; i++)
             {
                 if (double.TryParse(createTextBox[i].Text, NumberStyles.AllowDecimalPoint,
                         CultureInfo.InvariantCulture, out var parsedNumber))
@@ -240,7 +313,7 @@ namespace AdoProject.OtherForms
             }
             if (createTextBox is not null)
             {
-                connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
+                ConnectLine();
                 query = $"UPDATE {SelectedTable} SET {strQuery} WHERE ID = {createTextBox[0].Text}";
                 using (connection = new SqlConnection(connectionString))
                 {
@@ -255,17 +328,20 @@ namespace AdoProject.OtherForms
 
             for (int i = 0; i < DataBase.Columns.Count; i++)
             {
-                Row.RowDefinitions.Remove(DeleteRowDefinitions[i]);
-                Row.Children.Remove(DeleteLabel[i]);
-                Row.Children.Remove(createTextBox[i]);
+                Row.RowDefinitions.Remove(DeleteRowDefinitions![i]);
+                Row.Children.Remove(DeleteLabel![i]);
+                Row.Children.Remove(createTextBox![i]);
             }
         }
-
+        /// <summary>
+        /// Method for disabling the other interface when the add lines window appears 
+        /// </summary>
+        /// <param name="enable"></param>
         private void AddRowInTable(bool enable)
         {
             if (enable)
             {
-                ListBox.IsEnabled = false;
+                SelectTable.IsEnabled = false;
                 AddLineButton.IsEnabled = false;
                 EditLineButton.IsEnabled = false;
                 DeleteLineButton.IsEnabled = false;
@@ -273,13 +349,16 @@ namespace AdoProject.OtherForms
             }
             else if (enable == false)
             {
-                ListBox.IsEnabled = true;
+                SelectTable.IsEnabled = true;
                 AddLineButton.IsEnabled = true;
                 EditLineButton.IsEnabled = true;
                 DeleteLineButton.IsEnabled = true;
                 Back.IsEnabled = true;
             }
         }
+        /// <summary>
+        /// Method for creating a window for editing a line
+        /// </summary>
         private void EditRows()
         {
             Row.Visibility = Visibility.Visible;
@@ -329,6 +408,9 @@ namespace AdoProject.OtherForms
                 DeleteLabel.Add(i, label);
             }
         }
+        /// <summary>
+        /// Method for creating a window for adding a line
+        /// </summary>
         private void AddRows()
         {
             Row.Visibility = Visibility.Visible;
@@ -378,16 +460,19 @@ namespace AdoProject.OtherForms
                     DeleteLabel.Add(i, label);
             }
         }
+        /// <summary>
+        /// Method for loading the table
+        /// </summary>
         private void LoadData()
         {
-            connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
+            ConnectLine();
             query = $"Select * From {SelectedTable}";
 
             using (connection = new SqlConnection(connectionString))
             {
                 dataAdapter = new SqlDataAdapter(query, connection);
                 dataSet = new DataSet();
-                dataAdapter.Fill(dataSet, SelectedTable);
+                dataAdapter.Fill(dataSet, SelectedTable!);
                 var dataTable = dataSet.Tables[0];
 
                 DataBase.Columns.Clear();
@@ -407,6 +492,13 @@ namespace AdoProject.OtherForms
                 }
                 DataBase.ItemsSource = Maincollection;
             }
+        }
+        /// <summary>
+        /// Method with connection string 
+        /// </summary>
+        private void ConnectLine()
+        {
+            connectionString = $"Server={NameServer};DataBase={NameDataBase};Trusted_Connection=True;Encrypt=False;";
         }
     }
 }
